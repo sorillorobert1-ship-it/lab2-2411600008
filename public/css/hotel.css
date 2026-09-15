@@ -1,0 +1,124 @@
+:root {
+    --hotel-primary: #17365d;
+    --hotel-secondary: #2874a6;
+    --hotel-accent: #f4b400;
+    --hotel-dark: #123b5d;
+    --hotel-light: #f5f7fb;
+}
+
+body {
+    background: var(--hotel-light);
+    color: #212529;
+    font-family: Arial, sans-serif;
+}
+
+.auth-body {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #17365d 0%, #2874a6 100%);
+}
+
+.auth-title,
+.auth-subtitle {
+    color: #fff;
+}
+
+.auth-subtitle {
+    opacity: .9;
+}
+
+.auth-card {
+    border: 0;
+    border-radius: 14px;
+}
+
+.app-navbar {
+    background: linear-gradient(90deg, #17365d, #2874a6);
+    box-shadow: 0 2px 8px #0002;
+}
+
+.app-navbar .nav-link {
+    opacity: .9;
+}
+
+.app-navbar .nav-link.active,
+.app-navbar .nav-link:hover {
+    opacity: 1;
+}
+
+.brand-mark {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    background: #123b5d;
+    color: #f4b400;
+    font-size: .85rem;
+    font-weight: 700;
+}
+
+.stat-card {
+    border: 0;
+    border-left: 5px solid var(--hotel-primary);
+    border-radius: 14px;
+    box-shadow: 0 3px 12px #00000012;
+    transition: 0.2s;
+}
+
+.stat-card:hover {
+    transform: translateY(-3px);
+}
+
+.stat-card.accent {
+    border-left-color: var(--hotel-accent);
+}
+
+.stat-card.warning {
+    border-left-color: #e67e22;
+}
+
+.stat-card.danger {
+    border-left-color: #c0392b;
+}
+
+.btn-primary {
+    --bs-btn-bg: var(--hotel-primary);
+    --bs-btn-border-color: var(--hotel-primary);
+    --bs-btn-hover-bg: var(--hotel-secondary);
+    --bs-btn-hover-border-color: var(--hotel-secondary);
+}
+
+.btn-outline-primary {
+    --bs-btn-color: var(--hotel-primary);
+    --bs-btn-border-color: var(--hotel-primary);
+    --bs-btn-hover-bg: var(--hotel-primary);
+    --bs-btn-hover-border-color: var(--hotel-primary);
+}
+
+.card {
+    border: 0;
+    border-radius: 14px;
+}
+
+.table thead th {
+    background: #eef2f6;
+    white-space: nowrap;
+}
+
+.form-control:focus,
+.form-select:focus,
+.form-check-input:focus {
+    border-color: var(--hotel-secondary);
+    box-shadow: 0 0 0 .2rem rgba(40, 116, 166, .2);
+}
+
+.btn,
+.form-control,
+.form-select {
+    border-radius: 9px;
+}
+
+a {
+    color: var(--hotel-secondary);
+}

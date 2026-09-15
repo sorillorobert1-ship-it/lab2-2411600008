@@ -1,0 +1,70 @@
+LABORATORY EXERCISE 5 - QUESTIONNAIRE SAMPLE ANSWERS
+
+1. MVC components:
+Model manages data and business logic. In this project, Product represents product
+data and interacts with the products table. View handles presentation; examples are
+resources/views/products/index.blade.php and dashboard.blade.php. Controller handles
+requests and application flow; ProductController handles CRUD operations.
+
+2. Server-side MVC vs client-side JavaScript:
+Laboratory Exercise 4 relied on JavaScript and localStorage for client-side interaction
+and simulated data. Laravel processes requests on the server, applies business rules,
+validates input, and persists data in a database. A server-side framework is useful for
+business applications because data and business logic can be centrally managed and
+protected.
+
+3. HTTP request flow:
+The browser sends a request to a route. The route sends the request to the appropriate
+controller. The controller validates input and uses the model/Eloquent to interact
+with the database. The controller then returns a Blade view. The rendered HTML is sent
+back to the browser.
+
+4. Eloquent ORM:
+Eloquent is Laravel's object-relational mapper. It represents database tables as
+models. Examples include Product::count() for the dashboard total and
+Product::where('quantity', 0)->count() for out-of-stock products. Product::create()
+and $product->update() are also used for CRUD operations.
+
+5. Database migrations:
+Migrations define and version-control database schemas using PHP code. The products
+migration creates fields for id, name, sku, description, category, quantity,
+reorder_level, unit_price, supplier, and timestamps. Migrations make database
+structure repeatable and easier to share than manual SQL.
+
+6. MySQL vs localStorage:
+localStorage stores data in the browser on the client side. MySQL stores data on the
+server and can support multiple users. Server-side applications must protect
+authentication, validate input, prevent unauthorized access, and use secure database
+practices.
+
+7. Separation of Concerns:
+Each MVC component has a distinct responsibility. The Product model handles product
+data and business logic, ProductController handles requests and CRUD processing, and
+Blade views handle presentation. This keeps the application organized and maintainable.
+
+8. Dashboard comparison:
+Exercise 4 used JavaScript and localStorage, while Exercise 5 uses Laravel and MySQL
+for persistent real data. Client-side-only storage is limited because data is tied to
+the browser and is not suitable for centralized multi-user business data.
+
+9. Input validation:
+The ProductController validates required fields, string lengths, numeric values,
+minimum values, and SKU uniqueness before saving. Without validation, invalid or
+duplicate data could enter the database and cause incorrect inventory information or
+application problems.
+
+10. Color scheme:
+The custom inventory.css file defines CSS variables and styles the navigation,
+buttons, cards, tables, and forms. The master and guest layouts load the custom CSS
+so the dashboard and authentication pages have a consistent visual identity.
+
+11. Connecting Exercise 4 dashboard to Laravel:
+Static or localStorage-based values are replaced with database queries in
+DashboardController. The controller calculates total products, low-stock products,
+out-of-stock products, and inventory value, then passes those values to the Blade
+dashboard.
+
+12. Consistent visual identity:
+Using the same colors, navigation, buttons, cards, and typography across pages makes
+the application easier to recognize and use. Consistency improves the overall user
+experience and makes the system feel like one complete application.

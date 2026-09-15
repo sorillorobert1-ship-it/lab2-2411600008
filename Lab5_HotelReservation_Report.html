@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Laboratory Exercise 5 — Robert Hotel Reservation (Laravel MVC)</title>
+    <style>
+        body { font-family: Calibri, Arial, sans-serif; max-width: 900px; margin: 40px auto; line-height: 1.5; color: #222; }
+        h1, h2, h3 { color: #17365d; }
+        .meta { color: #555; }
+        ol li, ul li { margin-bottom: 10px; }
+        .q { font-weight: 700; margin-top: 22px; }
+        .box { background: #f5f7fb; border-left: 4px solid #17365d; padding: 12px 16px; margin: 16px 0; }
+        .shot { border: 1px dashed #2874a6; padding: 28px; text-align: center; color: #666; margin: 12px 0; }
+    </style>
+</head>
+<body>
+<h1>Laboratory Exercise 5</h1>
+<h2>Implementing MVC Architecture with Laravel: Hotel Reservation System</h2>
+<p class="meta">Theme: <strong>Robert Hotel</strong> — room inventory and reservations<br>
+Student: ________________ &nbsp;&nbsp; ID: ________________ &nbsp;&nbsp; Date: September 15, 2026</p>
+
+<h2>Introduction</h2>
+<p>
+This laboratory converted the Laboratory Exercise 4 hotel dashboard from client-side JavaScript and localStorage
+into a Laravel MVC application with MySQL. Rooms are the inventory items. Availability, nightly rates, and
+low-availability alerts are stored on the server so multiple staff can use the same live data.
+</p>
+
+<div class="box">
+    <strong>Login (test user)</strong><br>
+    Email: <code>admin@gmail.com</code><br>
+    Password: <code>admin123</code><br>
+    Database: <code>hotel_reservation</code>
+</div>
+
+<h2>System mapping (Lab 5 inventory → hotel)</h2>
+<ul>
+    <li><strong>Model / table:</strong> <code>Room</code> / <code>rooms</code> (name, SKU/room code, description, category/type, quantity available, reorder_level/alert, unit_price/nightly rate, supplier/wing)</li>
+    <li><strong>Movements:</strong> <code>Reservation</code> / <code>reservations</code> (booking or checkout)</li>
+    <li><strong>Controller:</strong> <code>RoomController</code> (full CRUD) and <code>DashboardController</code></li>
+    <li><strong>Views:</strong> Blade templates under <code>resources/views/rooms</code>, <code>dashboard</code>, and <code>auth</code></li>
+</ul>
+
+<h2>Output / Results</h2>
+<p>Paste screenshots here (Print this file to PDF after inserting images).</p>
+<p><strong>Screenshot 1:</strong> VS Code — Room model</p>
+<div class="shot">Insert screenshot of app/Models/Room.php</div>
+<p><strong>Screenshot 2:</strong> VS Code — RoomController</p>
+<div class="shot">Insert screenshot of app/Http/Controllers/RoomController.php</div>
+<p><strong>Screenshot 3:</strong> VS Code — Blade views</p>
+<div class="shot">Insert screenshot of rooms/index.blade.php or dashboard.blade.php</div>
+<p><strong>Screenshot 4:</strong> VS Code — custom CSS</p>
+<div class="shot">Insert screenshot of public/css/hotel.css</div>
+<p><strong>Screenshot 5:</strong> Login page</p>
+<div class="shot">Insert browser screenshot of login</div>
+<p><strong>Screenshot 6:</strong> Dashboard with real statistics</p>
+<div class="shot">Insert browser screenshot of dashboard</div>
+<p><strong>Screenshot 7:</strong> Room index</p>
+<div class="shot">Insert browser screenshot of /rooms</div>
+<p><strong>Screenshot 8:</strong> Add room form</p>
+<div class="shot">Insert browser screenshot of /rooms/create</div>
+<p><strong>Screenshot 9:</strong> Edit room</p>
+<div class="shot">Insert browser screenshot of /rooms/{id}/edit</div>
+<p><strong>Screenshot 10:</strong> phpMyAdmin rooms table</p>
+<div class="shot">Insert phpMyAdmin screenshot</div>
+<p><strong>Screenshot 11:</strong> GitHub repository</p>
+<div class="shot">Insert GitHub screenshot</div>
+<p><strong>Screenshot 12:</strong> Artisan commands</p>
+<div class="shot">Insert terminal screenshot (migrate, seed, serve)</div>
+
+<h2>Questions</h2>
+
+<p class="q">1. Explain the three components of the MVC architecture (Model, View, Controller) and their roles in your Laravel application. Provide specific examples from your inventory management system for each component.</p>
+<p>
+<strong>Model</strong> manages data and business rules. In this project the <code>Room</code> model maps to the <code>rooms</code> table, lists fillable fields, and methods such as <code>isLowStock()</code>, <code>isOutOfStock()</code>, and <code>stockValue()</code>. The <code>Reservation</code> model records booking and checkout movements.<br>
+<strong>View</strong> is the user interface. Blade files such as <code>dashboard.blade.php</code> and <code>rooms/index.blade.php</code> display statistics, badges, and forms. They do not write SQL.<br>
+<strong>Controller</strong> handles HTTP requests. <code>RoomController</code> runs index, create, store, show, edit, update, and destroy. <code>DashboardController</code> computes totals and passes them to the dashboard view.
+</p>
+
+<p class="q">2. In Laboratory Exercise 4, you used JavaScript for client-side interactivity. How does the server-side MVC approach differ from the client-side JavaScript approach? What are the advantages of using a server-side framework like Laravel for business applications?</p>
+<p>
+Lab 4 ran in the browser: charts and counts came from localStorage on one device. Laravel MVC runs on the server: every request is authenticated, validated, and saved in MySQL. Advantages include shared data for many users, hashed passwords, CSRF protection, centralized validation, backups, and business rules that users cannot bypass by editing JavaScript.
+</p>
+
+<p class="q">3. Describe the flow of an HTTP request in your Laravel application, from the user clicking a button to the response being displayed. Trace this through the routing, Controller, model, and view layers.</p>
+<p>
+Example: staff clicks <strong>Save Room</strong> on the create form. The browser POSTs to <code>/rooms</code> with a CSRF token. <code>routes/web.php</code> maps that to <code>RoomController@store</code> behind <code>auth</code> middleware. The controller validates input, <code>Room::create()</code> inserts a row, a <code>Reservation</code> may be logged, then Laravel redirects to the room list with a success flash. The index view reads rooms from the model and renders HTML.
+</p>
+
+<p class="q">4. What is Eloquent ORM, and how did it simplify database interactions? Provide at least two specific examples from your project where you used Eloquent methods.</p>
+<p>
+Eloquent maps tables to PHP classes so we use objects instead of raw SQL for most work. Examples: <code>Room::orderBy('name')->paginate(10)</code> in <code>index()</code>; <code>Room::whereColumn('quantity', '&lt;=', 'reorder_level')->count()</code> on the dashboard; <code>Room::updateOrCreate(['sku' =&gt; ...])</code> in <code>RoomSeeder</code>; <code>$room->reservations()</code> as a <code>hasMany</code> relationship.
+</p>
+
+<p class="q">5. Explain the purpose of database migrations. How did you use migrations to create your products table? What are the advantages of using migrations over manual SQL table creation?</p>
+<p>
+Migrations version the schema in PHP. <code>2026_09_15_000001_create_rooms_table.php</code> creates <code>rooms</code> with unique <code>sku</code>, quantity, reorder_level, and nightly rate. <code>2026_09_15_000002_create_reservations_table.php</code> creates reservation movements with a foreign key to rooms. Advantages: the same schema can be shared on GitHub, rolled back, and applied on any machine with <code>php artisan migrate</code> instead of copying phpMyAdmin SQL.
+</p>
+
+<p class="q">6. In Laboratory Exercise 4, you used localStorage to store data on the client side. How does storing data in a MySQL database through Laravel differ from using localStorage? What security considerations must you address when handling server-side data?</p>
+<p>
+localStorage is per-browser, unencrypted, and easy to edit. MySQL is centralized, supports relations and concurrent users, and is not visible in DevTools. Server-side we hash passwords, validate and authorize requests, use CSRF tokens, avoid mass-assignment of guarded fields, and never trust the client for prices or quantities without validation.
+</p>
+
+<p class="q">7. Explain the principle of "Separation of Concerns" in software development. How does Laravel's MVC architecture implement this principle? Provide specific examples from your code.</p>
+<p>
+Separation of concerns means each layer has one job. Validation and redirects live in <code>RoomController</code>, SQL-like queries and <code>isLowStock()</code> live in <code>Room</code>, and HTML/CSS live in Blade and <code>hotel.css</code>. Changing a badge in the view does not require changing the database schema.
+</p>
+
+<p class="q">8. Compare the approach to building the dashboard in Laboratory Exercise 4 (JavaScript + localStorage) with the approach in Laboratory Exercise 5 (Laravel + MySQL). What are the limitations of the client-side-only approach for real-world business applications?</p>
+<p>
+Lab 4 charts used static or local numbers. Lab 5 charts use <code>DashboardController</code> queries (total rooms, low availability, fully booked, inventory value). Client-only apps cannot be the source of truth for a hotel: data is lost if the browser is cleared, two front-desk PCs do not share bookings, and there is no real audit trail.
+</p>
+
+<p class="q">9. Discuss the importance of input validation in web applications. How did you implement validation in your Laravel application? What would happen if you did not validate user input before saving to the database?</p>
+<p>
+<code>RoomController</code> uses <code>$request-&gt;validate()</code> for required name, unique SKU, numeric quantity and rate, and minimum of zero. Custom messages explain errors on the form. Without validation, duplicate room codes, negative availability, or malformed prices could be stored, and malicious input could break queries or the UI.
+</p>
+
+<p class="q">10. How did you integrate your chosen color scheme from Laboratory Exercise 4 into your Laravel application? Describe the process of applying custom CSS to override Bootstrap defaults.</p>
+<p>
+The Lab 4 navy-and-gold palette is in <code>public/css/hotel.css</code> as CSS variables (<code>--hotel-primary: #17365d</code>, <code>--hotel-secondary: #2874a6</code>, <code>--hotel-accent: #f4b400</code>). Layouts link this file after Bootstrap. Buttons, navbar gradient, stat-card borders, and focus rings override Bootstrap defaults so login, dashboard, and room pages match.
+</p>
+
+<p class="q">11. Explain how you connected your dashboard from Laboratory Exercise 4 to the Laravel backend. What changes were necessary to display real data instead of static data?</p>
+<p>
+The visual layout (stat cards, charts, recent list) stayed. JavaScript no longer reads localStorage. The dashboard route is auth-protected. <code>DashboardController@index</code> loads counts from <code>rooms</code> and passes them to Blade. Chart.js receives JSON from those queries. CRUD pages replace simulated add/edit/delete.
+</p>
+
+<p class="q">12. Discuss the importance of maintaining a consistent visual identity across both the client-side and server-side components of your application. How does this contribute to the user experience?</p>
+<p>
+Staff who used the Lab 4 dashboard still see Robert Hotel branding, the same colors, and similar cards. Consistent identity reduces confusion when moving from mock UI to the real login and room modules, and it looks like one product instead of two unrelated sites.
+</p>
+
+<h2>Conclusion</h2>
+<p>
+This exercise showed how Laravel MVC turns a hotel dashboard into a working reservation inventory system. Models encapsulate room data, controllers handle secure CRUD and statistics, and Blade views present live MySQL values. Compared with localStorage, the server-side design is shareable, validated, and closer to a real front-desk application. I learned migrations, Eloquent, Breeze authentication, and how to keep Laboratory Exercise 4 styling while replacing simulated data with a database.
+</p>
+</body>
+</html>

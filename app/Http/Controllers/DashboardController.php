@@ -6,6 +6,7 @@ use App\Models\Product;
 use App\Models\Room;
 use App\Models\Reservation;
 use Illuminate\View\View;
+use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
@@ -65,10 +66,13 @@ class DashboardController extends Controller
             ->groupBy('category')
             ->get();
 
-        $monthlyValue = Product::select(
-                \DB::raw('DATE_FORMAT(created_at, "%Y-%m") as month'),
-                \DB::raw('SUM(quantity * unit_price) as total_value'),
-                \DB::raw('count(*) as count')
+        // Use the date function supported by the configured database driver.
+        $monthExpression = DB::connection()->getDriverName() === 'sqlite'
+            ? "strftime('%Y-%m', created_at)"
+            : "DATE_FORMAT(created_at, '%Y-%m')";
+
+        $monthlyValue = Product::selectRaw(
+                "$monthExpression as month, SUM(quantity * unit_price) as total_value, count(*) as count"
             )
             ->groupBy('month')
             ->orderBy('month')

@@ -1,0 +1,202 @@
+[
+    {
+        "id": 1,
+        "sku": "HSK-001",
+        "name": "Bath Towels",
+        "category": "Housekeeping",
+        "supplier": "CleanPro",
+        "quantity": 53,
+        "reorderLevel": 20,
+        "unitPrice": 350
+    },
+    {
+        "id": 2,
+        "sku": "HSK-002",
+        "name": "Bed Sheets",
+        "category": "Housekeeping",
+        "supplier": "LinenHub",
+        "quantity": 29,
+        "reorderLevel": 15,
+        "unitPrice": 650
+    },
+    {
+        "id": 3,
+        "sku": "HTL-001",
+        "name": "Shampoo",
+        "category": "Toiletries",
+        "supplier": "FreshCare",
+        "quantity": 24,
+        "reorderLevel": 25,
+        "unitPrice": 95
+    },
+    {
+        "id": 4,
+        "sku": "HTL-002",
+        "name": "Soap",
+        "category": "Toiletries",
+        "supplier": "FreshCare",
+        "quantity": 52,
+        "reorderLevel": 30,
+        "unitPrice": 45
+    },
+    {
+        "id": 5,
+        "sku": "FNB-001",
+        "name": "Bottled Water",
+        "category": "Food & Beverage",
+        "supplier": "AquaPure",
+        "quantity": 86,
+        "reorderLevel": 40,
+        "unitPrice": 25
+    },
+    {
+        "id": 6,
+        "sku": "FNB-002",
+        "name": "Coffee Beans",
+        "category": "Food & Beverage",
+        "supplier": "BeanWorks",
+        "quantity": 13,
+        "reorderLevel": 20,
+        "unitPrice": 480
+    },
+    {
+        "id": 7,
+        "sku": "FNB-003",
+        "name": "Tea Bags",
+        "category": "Food & Beverage",
+        "supplier": "TeaHouse",
+        "quantity": 50,
+        "reorderLevel": 20,
+        "unitPrice": 160
+    },
+    {
+        "id": 8,
+        "sku": "MNT-001",
+        "name": "LED Bulbs",
+        "category": "Maintenance",
+        "supplier": "BrightTech",
+        "quantity": 10,
+        "reorderLevel": 15,
+        "unitPrice": 120
+    },
+    {
+        "id": 9,
+        "sku": "MNT-002",
+        "name": "Cleaning Gloves",
+        "category": "Maintenance",
+        "supplier": "SafeHands",
+        "quantity": 36,
+        "reorderLevel": 20,
+        "unitPrice": 75
+    },
+    {
+        "id": 10,
+        "sku": "MNT-003",
+        "name": "Aircon Filter",
+        "category": "Maintenance",
+        "supplier": "CoolAir",
+        "quantity": 8,
+        "reorderLevel": 10,
+        "unitPrice": 450
+    },
+    {
+        "id": 11,
+        "sku": "LND-001",
+        "name": "Laundry Detergent",
+        "category": "Laundry",
+        "supplier": "WashPro",
+        "quantity": 19,
+        "reorderLevel": 15,
+        "unitPrice": 280
+    },
+    {
+        "id": 12,
+        "sku": "LND-002",
+        "name": "Fabric Softener",
+        "category": "Laundry",
+        "supplier": "WashPro",
+        "quantity": 19,
+        "reorderLevel": 12,
+        "unitPrice": 310
+    },
+    {
+        "id": 13,
+        "sku": "HSK-003",
+        "name": "Pillow Cases",
+        "category": "Housekeeping",
+        "supplier": "LinenHub",
+        "quantity": 15,
+        "reorderLevel": 12,
+        "unitPrice": 180
+    },
+    {
+        "id": 14,
+        "sku": "HTL-003",
+        "name": "Toothpaste",
+        "category": "Toiletries",
+        "supplier": "FreshCare",
+        "quantity": 0,
+        "reorderLevel": 10,
+        "unitPrice": 60
+    },
+    {
+        "id": 15,
+        "sku": "FNB-004",
+        "name": "Canned Juice",
+        "category": "Food & Beverage",
+        "supplier": "DrinkCo",
+        "quantity": 9,
+        "reorderLevel": 10,
+        "unitPrice": 55
+    },
+    {
+        "id": 16,
+        "sku": "DEMO-1788872003008",
+        "name": "Demo Guest Amenities",
+        "category": "Toiletries",
+        "supplier": "Charm Supplier",
+        "quantity": 22,
+        "reorderLevel": 10,
+        "unitPrice": 80
+    },
+    {
+        "id": 17,
+        "sku": "DEMO-1788875725999",
+        "name": "Demo Guest Amenities",
+        "category": "Toiletries",
+        "supplier": "Charm Supplier",
+        "quantity": 25,
+        "reorderLevel": 10,
+        "unitPrice": 80
+    },
+    {
+        "id": 18,
+        "sku": "DEMO-1788875734491",
+        "name": "Demo Guest Amenities",
+        "category": "Toiletries",
+        "supplier": "Charm Supplier",
+        "quantity": 26,
+        "reorderLevel": 10,
+        "unitPrice": 80
+    },
+    {
+        "id": 19,
+        "sku": "DEMO-1788878330563",
+        "name": "Demo Guest Amenities",
+        "category": "Toiletries",
+        "supplier": "Robert Supplier",
+        "quantity": 26,
+        "reorderLevel": 10,
+        "unitPrice": 80
+    },
+    {
+        "id": 20,
+        "sku": "DEMO-1788878755901",
+        "name": "Demo Guest Amenities",
+        "category": "Toiletries",
+        "supplier": "Robert Supplier",
+        "quantity": 26,
+        "reorderLevel": 10,
+        "unitPrice": 80
+    }
+]

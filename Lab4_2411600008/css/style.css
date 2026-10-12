@@ -1,0 +1,103 @@
+body {
+    background: #f5f7fb;
+    font-family: Arial, sans-serif;
+}
+
+.topbar {
+    background: linear-gradient(90deg, #17365d, #2874a6);
+    box-shadow: 0 2px 8px #0002;
+}
+
+.hotel-logo {
+    width: 44px;
+    height: 44px;
+    object-fit: contain;
+    border-radius: 8px;
+    background: #123b5d;
+}
+
+.stat-card,
+.chart-card,
+.card {
+    background: #fff;
+    border: 0;
+    border-radius: 14px;
+}
+
+.stat-card {
+    padding: 20px;
+    box-shadow: 0 3px 12px #00000012;
+    transition: 0.2s;
+}
+
+.stat-card:hover {
+    transform: translateY(-3px);
+}
+
+.stat-number {
+    font-size: 1.7rem;
+    font-weight: 700;
+}
+
+.chart-card {
+    padding: 18px;
+    box-shadow: 0 3px 12px #00000012;
+}
+
+.chart-wrap {
+    height: 320px;
+    position: relative;
+}
+
+.change-item {
+    padding: 9px 0;
+    border-bottom: 1px solid #eee;
+    font-size: 0.9rem;
+}
+
+.btn,
+.form-control,
+.form-select {
+    border-radius: 9px;
+}
+
+.btn {
+    transition: 0.2s;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+}
+
+mark {
+    padding: 0 2px;
+    border-radius: 3px;
+    background: #fff3a3;
+}
+
+@media (max-width: 767px) {
+
+    .topbar .small {
+        display: none;
+    }
+
+    .chart-wrap {
+        height: 280px;
+    }
+
+    .stat-card {
+        padding: 14px;
+    }
+
+    .stat-number {
+        font-size: 1.35rem;
+    }
+
+    .btn {
+        width: 100%;
+    }
+
+    .table {
+        font-size: 0.85rem;
+    }
+}

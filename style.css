@@ -1,0 +1,93 @@
+
+:root {
+    --primary: #1a5276;
+    --secondary: #2980b9;
+    --background: #f0f3f5;
+    --text: #2c3e50;
+    --accent: #e67e22;
+    --light: #d4e6f1;
+}
+
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: var(--background);
+    color: var(--text);
+    margin: 0;
+    padding: 0;
+}
+
+
+header {
+    background-color: var(--primary);
+    color: white;
+    text-align: center;
+    padding: 20px;
+}
+
+nav {
+    background-color: var(--secondary);
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    padding: 10px;
+}
+
+nav a {
+    color: white;
+    text-decoration: none;
+    padding: 8px 12px;
+}
+
+nav a:hover {
+    background-color: var(--accent);
+    border-radius: 5px;
+}
+
+
+main {
+    padding: 20px;
+}
+
+
+section {
+    background-color: var(--light);
+    margin: 15px 0;
+    padding: 15px;
+    border-radius: 10px;
+}
+
+h1, h2, h3 {
+    margin-bottom: 10px;
+    padding: 11px;
+}
+
+
+ul {
+    padding-left: 20px;
+}
+
+
+.card {
+    background-color: white;
+    padding: 10px;
+    margin: 10px 0;
+    border-left: 5px solid var(--accent);
+}
+
+
+aside {
+    background-color: #ffffff;
+    padding: 15px;
+    margin: 20px;
+    border: 2px solid var(--secondary);
+}
+
+
+footer {
+    background-color: var(--primary);
+    color: white;
+    text-align: center;
+    padding: 15px;
+    margin-top: 20px;
+}

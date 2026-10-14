@@ -6,7 +6,7 @@
     <title>@yield('title', 'Inventory Management System')</title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="{{ asset('css/inventory.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/hotel.css') }}" rel="stylesheet">
 </head>
 <body>
 <nav class="navbar navbar-expand-lg navbar-dark app-navbar">
@@ -43,9 +43,18 @@
                         <a class="nav-link {{ request()->routeIs('rooms.*') ? 'active' : '' }}"
                            href="{{ route('rooms.index') }}">Rooms</a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('inventory.*') ? 'active' : '' }}"
+                           href="{{ route('inventory.index') }}">Inventory Tracking</a>
+                    </li>
                 </ul>
 
                 <div class="d-flex align-items-center gap-3">
+                    <a href="{{ route('inventory.index') }}" class="text-white text-decoration-none" title="Unread low-stock notifications">
+                        <span aria-hidden="true">🔔</span>
+                        @php($unreadCount = auth()->user()->unreadNotifications()->count())
+                        @if($unreadCount > 0)<span class="badge rounded-pill text-bg-danger">{{ $unreadCount }}</span>@endif
+                    </a>
                     <span class="text-white small">{{ auth()->user()->name }}</span>
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf

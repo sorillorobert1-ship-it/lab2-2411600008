@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Product;
 use App\Models\Room;
 use App\Models\Reservation;
+use App\Models\InventoryTransaction;
 use Illuminate\View\View;
 use Illuminate\Support\Facades\DB;
 
@@ -20,6 +21,10 @@ class DashboardController extends Controller
         $totalQuantity = Product::sum('quantity');
 
         $recentProducts = Product::latest()->take(5)->get();
+        $recentTransactions = InventoryTransaction::with(['product', 'user'])
+            ->latest('created_at')
+            ->take(8)
+            ->get();
 
         // Category summary for charts
         $categorySummary = Product::selectRaw('category, SUM(quantity) as total_quantity, SUM(quantity * unit_price) as total_value')
@@ -52,6 +57,7 @@ class DashboardController extends Controller
             'inventoryValue',
             'totalQuantity',
             'recentProducts',
+            'recentTransactions',
             'categorySummary',
             'lowStockProducts',
             'topProducts',
@@ -93,6 +99,7 @@ class DashboardController extends Controller
 
         $outOfStockProducts = Product::where('quantity', 0)->get();
         $totalInventoryValue = Product::selectRaw('COALESCE(SUM(quantity * unit_price), 0) as total')->value('total');
+        $movementReport = InventoryTransaction::with(['product', 'user'])->latest('created_at')->take(50)->get();
 
         return view('reports', compact(
             'productsByCategory',
@@ -101,6 +108,7 @@ class DashboardController extends Controller
             'supplierSummary',
             'outOfStockProducts',
             'totalInventoryValue'
+            , 'movementReport'
         ));
     }
 }

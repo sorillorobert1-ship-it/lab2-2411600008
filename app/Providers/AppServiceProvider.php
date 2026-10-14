@@ -14,6 +14,7 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        \Illuminate\Support\Facades\Event::listen(\App\Events\StockChanged::class, \App\Listeners\NotifyLowStock::class);
         Paginator::useBootstrapFive();
     }
 }

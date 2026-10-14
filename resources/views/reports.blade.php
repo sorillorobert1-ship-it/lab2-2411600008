@@ -93,6 +93,8 @@
     </div>
 </div>
 
+<div class="card shadow-sm mb-4"><div class="card-body"><div class="d-flex justify-content-between align-items-center mb-3"><h5 class="mb-0">Stock Movement Report</h5><a href="{{ route('inventory.export') }}" class="btn btn-sm btn-outline-success">Export CSV</a></div><div class="table-responsive"><table class="table table-hover table-sm"><thead><tr><th>Date</th><th>Product</th><th>Type</th><th>Qty</th><th>Balance</th><th>User</th></tr></thead><tbody>@forelse($movementReport as $movement)<tr><td>{{ $movement->created_at?->format('Y-m-d H:i') }}</td><td>{{ $movement->product?->name ?? 'Deleted' }}</td><td>{{ str_replace('_', ' ', $movement->transaction_type) }}</td><td>{{ $movement->quantity }}</td><td>{{ $movement->quantity_after }}</td><td>{{ $movement->user?->name ?? 'Unknown' }}</td></tr>@empty<tr><td colspan="6" class="text-muted">No movements recorded.</td></tr>@endforelse</tbody></table></div></div></div>
+
 <!-- DETAILED TABLES -->
 <div class="row g-4">
     <div class="col-lg-6">

@@ -77,6 +77,35 @@
     </div>
 </div>
 
+<div class="mt-4 card shadow-sm">
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="mb-0">Transaction History</h5>
+            <a href="{{ route('inventory.index') }}" class="btn btn-sm btn-outline-primary">Record Movement</a>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-sm align-middle">
+                <thead><tr><th>Date</th><th>Type</th><th>Quantity</th><th>Running Balance</th><th>User</th><th>Reference</th></tr></thead>
+                <tbody>
+                @forelse($transactions as $transaction)
+                    <tr>
+                        <td>{{ $transaction->created_at?->format('Y-m-d H:i') }}</td>
+                        <td><span class="badge {{ $transaction->transaction_type === 'stock_in' ? 'bg-success' : 'bg-danger' }}">{{ str_replace('_', ' ', $transaction->transaction_type) }}</span></td>
+                        <td>{{ $transaction->transaction_type === 'stock_in' ? '+' : '-' }}{{ $transaction->quantity }}</td>
+                        <td>{{ $transaction->quantity_after }}</td>
+                        <td>{{ $transaction->user?->name ?? 'Unknown' }}</td>
+                        <td>{{ $transaction->reference_document ?: '—' }}</td>
+                    </tr>
+                @empty
+                    <tr><td colspan="6" class="text-muted">No inventory transactions yet.</td></tr>
+                @endforelse
+                </tbody>
+            </table>
+        </div>
+        {{ $transactions->links() }}
+    </div>
+</div>
+
 <div class="mt-4">
     <a href="{{ route('products.index') }}" class="btn btn-outline-secondary">Back to Products</a>
 </div>

@@ -6,7 +6,7 @@
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
         <h1 class="fw-bold mb-1">Products</h1>
-        <p class="text-muted mb-0">Manage your hotel inventory.</p>
+        <p class="text-muted mb-0">Manage Robert Hotel room and housekeeping supplies.</p>
     </div>
     <a href="{{ route('products.create') }}" class="btn btn-primary">+ Add Product</a>
 </div>

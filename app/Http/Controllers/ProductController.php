@@ -71,7 +71,10 @@ class ProductController extends Controller
             $this->messages()
         );
 
-        Product::create($validated);
+        $initial=(int)$validated['quantity'];
+        $validated['quantity']=0;
+        $product=Product::create($validated);
+        if($initial>0) app(\App\Services\InventoryService::class)->move($product->id,auth()->id(),'stock_in',$initial,'OPENING-STOCK','Initial stock on product creation');
 
         return redirect()
             ->route('products.index')
@@ -80,7 +83,8 @@ class ProductController extends Controller
 
     public function show(Product $product): View
     {
-        return view('products.show', compact('product'));
+        $transactions = $product->transactions()->with('user')->latest('created_at')->paginate(10)->withQueryString();
+        return view('products.show', compact('product', 'transactions'));
     }
 
     public function edit(Product $product): View
@@ -95,6 +99,7 @@ class ProductController extends Controller
             $this->messages()
         );
 
+        unset($validated['quantity']); // Stock changes must use the audited inventory movement form.
         $product->update($validated);
 
         return redirect()
@@ -104,6 +109,7 @@ class ProductController extends Controller
 
     public function destroy(Product $product): RedirectResponse
     {
+        if($product->transactions()->exists())return back()->with('error','This product has inventory history and cannot be deleted.');
         $product->delete();
 
         return redirect()
@@ -161,7 +167,7 @@ class ProductController extends Controller
             ],
             'description' => ['nullable', 'string'],
             'category' => ['required', 'string', 'max:100'],
-            'quantity' => ['required', 'integer', 'min:0'],
+            'quantity' => [$product ? 'sometimes' : 'required', 'integer', 'min:0'],
             'reorder_level' => ['required', 'integer', 'min:0'],
             'unit_price' => ['required', 'numeric', 'min:0'],
             'supplier' => ['nullable', 'string', 'max:150'],

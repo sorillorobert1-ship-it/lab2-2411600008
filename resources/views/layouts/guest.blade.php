@@ -15,7 +15,7 @@
                 <div class="text-center mb-4">
                     <img src="{{ asset('image/logo.png') }}" alt="Robert Hotel Logo" class="mx-auto mb-3" style="max-width: 200px;">
                     <h1 class="fw-bold auth-title">Robert Hotel</h1>
-                    <p class="auth-subtitle mb-0">Reservation & Room Inventory</p>
+                    <p class="auth-subtitle mb-0">Room and Guest Supplies Inventory</p>
                 </div>
 
                 <div class="card shadow-sm auth-card">

@@ -6,7 +6,7 @@
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
         <h1 class="fw-bold mb-1">Inventory Dashboard</h1>
-        <p class="text-muted mb-0">Real-time inventory statistics.</p>
+        <p class="text-muted mb-0">Real-time inventory statistics. <span id="lastUpdated" class="small"></span></p>
     </div>
     <a href="{{ route('products.create') }}" class="btn btn-primary">+ Add Product</a>
 </div>
@@ -24,14 +24,14 @@
     <div class="col-6 col-lg-3">
         <div class="stat-card">
             <div class="small">Products</div>
-            <div class="stat-number">{{ $totalProducts }}</div>
+            <div class="stat-number" id="dashboard-total-products">{{ $totalProducts }}</div>
         </div>
     </div>
 
     <div class="col-6 col-lg-3">
         <div class="stat-card">
             <div class="small">Total Quantity</div>
-            <div class="stat-number">{{ $totalQuantity }}</div>
+            <div class="stat-number" id="dashboard-total-quantity">{{ $totalQuantity }}</div>
         </div>
     </div>
 
@@ -45,7 +45,7 @@
     <div class="col-6 col-lg-3">
         <div class="stat-card">
             <div class="small">Low / Out Stock</div>
-            <div class="stat-number">{{ $lowStockItems + $outOfStockItems }}</div>
+            <div class="stat-number" id="dashboard-low-stock">{{ $lowStockItems + $outOfStockItems }}</div>
         </div>
     </div>
 </div>
@@ -162,9 +162,26 @@
     <div class="col-lg-6">
         <div class="card shadow-sm">
             <div class="card-body">
-                <h5>Recent Inventory Changes</h5>
-                <div id="changesList">
-                    <p class="text-muted">Track inventory movements here.</p>
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="mb-0">Recent Inventory Changes</h5>
+                    <a href="{{ route('inventory.index') }}" class="btn btn-sm btn-outline-primary">View all</a>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover align-middle mb-0">
+                        <thead><tr><th>Product</th><th>Type</th><th>Qty</th><th>Balance</th></tr></thead>
+                        <tbody>
+                        @forelse($recentTransactions as $transaction)
+                            <tr>
+                                <td>{{ $transaction->product?->name ?? 'Deleted product' }}<div class="small text-muted">{{ $transaction->created_at?->format('M d, H:i') }}</div></td>
+                                <td><span class="badge {{ $transaction->transaction_type === 'stock_in' ? 'bg-success' : ($transaction->transaction_type === 'adjustment' ? 'bg-warning text-dark' : 'bg-danger') }}">{{ str_replace('_', ' ', $transaction->transaction_type) }}</span></td>
+                                <td>{{ $transaction->transaction_type === 'stock_in' ? '+' : '-' }}{{ $transaction->quantity }}</td>
+                                <td>{{ $transaction->quantity_after }}</td>
+                            </tr>
+                        @empty
+                            <tr><td colspan="4" class="text-muted">No inventory transactions recorded yet.</td></tr>
+                        @endforelse
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
@@ -264,3 +281,20 @@
 </script>
 @endpush
 @endsection
+<script>
+async function refreshDashboard(){
+    try{
+        const response=await fetch(@json(route('dashboard.stats')));
+        if(!response.ok) return;
+        const data=await response.json();
+        document.getElementById('dashboard-total-products').textContent=data.total_products;
+        document.getElementById('dashboard-total-quantity').textContent=data.total_quantity;
+        document.getElementById('dashboard-low-stock').textContent=data.low_stock;
+        document.querySelectorAll('.stat-card')[2].querySelector('.stat-number').textContent='₱'+Number(data.inventory_value).toLocaleString('en-PH',{minimumFractionDigits:2});
+        const updated=document.getElementById('lastUpdated');
+        updated.textContent='Last updated: '+new Date(data.updated_at).toLocaleTimeString();
+    }catch(error){console.warn('Dashboard refresh failed',error)}
+}
+refreshDashboard();
+setInterval(refreshDashboard,30000);
+</script>

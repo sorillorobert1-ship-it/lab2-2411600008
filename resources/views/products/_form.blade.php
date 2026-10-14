@@ -33,7 +33,8 @@
 
     <div class="col-md-4">
         <label for="quantity" class="form-label">Quantity</label>
-        <input type="number" class="form-control @error('quantity') is-invalid @enderror" id="quantity" name="quantity" value="{{ old('quantity') ?? $product->quantity ?? 0 }}" min="0" required>
+        <input type="number" {{ isset($product) ? 'disabled' : '' }} class="form-control @error('quantity') is-invalid @enderror" id="quantity" name="quantity" value="{{ old('quantity') ?? $product->quantity ?? 0 }}" min="0" required>
+        @if(isset($product)) <small>Use Inventory → Stock Movement to change quantity.</small> @endif
         @error('quantity')
             <div class="invalid-feedback">{{ $message }}</div>
         @enderror

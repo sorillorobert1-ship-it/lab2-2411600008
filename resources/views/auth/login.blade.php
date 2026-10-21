@@ -1,0 +1,4 @@
+@extends('layouts.app')
+@section('content')
+<div class="form-card"><div class="eyebrow">Secure access</div><h1>Sign in</h1><div class="card"><form method="post" action="{{ route('login') }}">@csrf<label for="email">Email</label><input type="email" name="email" id="email" value="{{ old('email') }}" required autofocus><label for="password">Password</label><input type="password" name="password" id="password" required><label style="font-weight:400"><input type="checkbox" name="remember" style="width:auto"> Remember me</label><br><br><button class="btn" type="submit">Sign in</button></form>@if($errors->any())<div class="alert warning" style="margin-top:16px">{{ $errors->first() }}</div>@endif<p class="muted">No account? <a href="{{ route('register') }}" style="color:#246bfd">Create one</a></p></div></div>
+@endsection

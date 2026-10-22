@@ -7,11 +7,17 @@ use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
+
+    public function accounts(): HasMany
+    {
+        return $this->hasMany(Account::class);
+    }
 
     /**
      * The attributes that are mass assignable.
@@ -22,7 +28,6 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'is_admin',
     ];
 
     /**
@@ -45,13 +50,6 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
-            'is_admin' => 'boolean',
         ];
     }
-
-    public function reservations()
-    {
-        return $this->hasMany(Reservation::class);
-    }
-    public function inventoryTransactions(){return $this->hasMany(InventoryTransaction::class);}
 }

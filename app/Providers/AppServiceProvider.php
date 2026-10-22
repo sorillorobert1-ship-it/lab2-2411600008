@@ -2,19 +2,16 @@
 
 namespace App\Providers;
 
-use Illuminate\Pagination\Paginator;
+use App\Models\BankTransaction;
+use App\Observers\AccountObserver;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
-    public function register(): void
-    {
-        //
-    }
+    public function register(): void {}
 
     public function boot(): void
     {
-        \Illuminate\Support\Facades\Event::listen(\App\Events\StockChanged::class, \App\Listeners\NotifyLowStock::class);
-        Paginator::useBootstrapFive();
+        BankTransaction::observe(AccountObserver::class);
     }
 }

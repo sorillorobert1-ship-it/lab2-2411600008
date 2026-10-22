@@ -1,43 +1,32 @@
 <?php
 
-use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\ProductController;
-use App\Http\Controllers\RoomController;
+use App\Http\Controllers\TransactionController;
+use App\Http\Controllers\AuthController;
+use App\Models\Account;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\InventoryController;
-use App\Http\Controllers\InventoryTransactionController;
+use Illuminate\Support\Facades\Auth;
 
-Route::get('/', function () {
-    return redirect()->route('login');
+Route::get('/', fn () => Auth::check() ? redirect()->route('dashboard') : view('welcome'));
+Route::middleware('guest')->group(function () {
+    Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
+    Route::post('/login', [AuthController::class, 'login']);
+    Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
+    Route::post('/register', [AuthController::class, 'register']);
+});
+Route::middleware('auth')->group(function () {
+    Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+    Route::get('/dashboard', [TransactionController::class, 'index'])->name('dashboard');
+    Route::get('/transactions/create', [TransactionController::class, 'create'])->name('transactions.create');
+    Route::post('/transactions', [TransactionController::class, 'store'])->name('transactions.store');
 });
 
-Route::middleware(['auth'])->group(function () {
-    Route::get('/inventory', [InventoryController::class,'index'])->name('inventory.index');
-    Route::post('/inventory/movements', [InventoryController::class,'store'])->name('inventory.store');
-    Route::post('/inventory/adjustments', [InventoryController::class,'adjust'])->name('inventory.adjust');
-    Route::get('/transactions', [InventoryTransactionController::class, 'index'])->name('transactions.index');
-    Route::get('/transactions/create', [InventoryTransactionController::class, 'create'])->name('transactions.create');
-    Route::post('/transactions', [InventoryTransactionController::class, 'store'])->name('transactions.store');
-    Route::get('/transactions/{transaction}', [InventoryTransactionController::class, 'show'])->name('transactions.show');
-    Route::delete('/transactions/{transaction}', [InventoryTransactionController::class, 'destroy'])->name('transactions.destroy');
-    Route::get('/api/inventory/live', [InventoryController::class,'api'])->name('inventory.api');
-    Route::get('/api/dashboard/stats', [InventoryController::class,'dashboardStats'])->name('dashboard.stats');
-    Route::get('/api/products/low-stock', [InventoryController::class,'lowStockProducts'])->name('products.low-stock');
-    Route::get('/api/transactions/recent', [InventoryController::class,'recentTransactions'])->name('transactions.recent');
-    Route::get('/api/inventory/notifications', [InventoryController::class,'notifications'])->name('inventory.notifications');
-    Route::post('/inventory/notifications/read', [InventoryController::class,'markRead'])->name('inventory.notifications.read');
-    Route::post('/inventory/notifications/{id}/read', [InventoryController::class,'markNotificationRead'])->name('inventory.notification.read');
-    Route::get('/inventory/export', [InventoryController::class,'export'])->name('inventory.export');
-    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-    Route::get('/reports', [DashboardController::class, 'reports'])->name('reports.index');
-    Route::resource('rooms', RoomController::class);
-    Route::resource('products', ProductController::class);
-    Route::get('/products/export/csv', [ProductController::class, 'exportCsv'])->name('products.export.csv');
-
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-});
-
-require __DIR__.'/auth.php';
+Route::get('/api/accounts/{account}/balance', function (Account $account) {
+    abort_unless($account->user_id === auth()->id(), 403);
+    return response()->json([
+        'account_number' => $account->account_number,
+        'balance' => (float) $account->balance,
+        'low_balance' => (float) $account->balance < (float) $account->low_balance_threshold,
+        'threshold' => (float) $account->low_balance_threshold,
+        'updated_at' => optional($account->updated_at)->toISOString(),
+    ]);
+})->middleware('auth')->name('api.accounts.balance');

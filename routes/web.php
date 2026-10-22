@@ -2,7 +2,6 @@
 
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\AuthController;
-use App\Models\Account;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 
@@ -19,14 +18,3 @@ Route::middleware('auth')->group(function () {
     Route::get('/transactions/create', [TransactionController::class, 'create'])->name('transactions.create');
     Route::post('/transactions', [TransactionController::class, 'store'])->name('transactions.store');
 });
-
-Route::get('/api/accounts/{account}/balance', function (Account $account) {
-    abort_unless($account->user_id === auth()->id(), 403);
-    return response()->json([
-        'account_number' => $account->account_number,
-        'balance' => (float) $account->balance,
-        'low_balance' => (float) $account->balance < (float) $account->low_balance_threshold,
-        'threshold' => (float) $account->low_balance_threshold,
-        'updated_at' => optional($account->updated_at)->toISOString(),
-    ]);
-})->middleware('auth')->name('api.accounts.balance');

@@ -1,0 +1,9 @@
+<?php
+namespace App\Services;
+use App\Models\{Product,PurchaseOrder,Supplier}; use Illuminate\Support\Facades\DB;
+class ReplenishmentService {
+ public function averageDailyUsage(Product $product,int $days=30):float { $out=$product->inventoryTransactions()->where('type','out')->where('created_at','>=',now()->subDays($days))->sum('quantity'); return round($out/max($days,1),2); }
+ public function reorderPoint(Product $product,Supplier $supplier):int { return (int)ceil($this->averageDailyUsage($product)*$supplier->lead_time_days)+$product->safety_stock; }
+ public function suggestedQuantity(Product $product,Supplier $supplier):int { return max((int)ceil($this->averageDailyUsage($product)*30)+$product->safety_stock-$product->quantity_on_hand,(int)($product->pivot->minimum_order_quantity??1)); }
+ public function generateFor(Product $product,?Supplier $supplier=null):?PurchaseOrder { $supplier??=$product->suppliers()->wherePivot('is_preferred',true)->first()??$product->suppliers()->first(); if(!$supplier||$product->quantity_on_hand>$this->reorderPoint($product,$supplier))return null; $existing=PurchaseOrder::where('supplier_id',$supplier->id)->whereIn('status',['draft','pending_approval','approved','ordered'])->whereHas('items',fn($q)=>$q->where('purchasable_type',Product::class)->where('purchasable_id',$product->id))->first(); if($existing)return $existing; return DB::transaction(function()use($product,$supplier){$po=PurchaseOrder::create(['po_number'=>'PO-'.now()->format('YmdHis').'-'.random_int(10,99),'supplier_id'=>$supplier->id,'status'=>'pending_approval','expected_delivery_date'=>now()->addDays($supplier->lead_time_days)]);$qty=$this->suggestedQuantity($product,$supplier);$cost=$product->pivot->unit_cost??$product->unit_cost;$po->items()->create(['purchasable_type'=>Product::class,'purchasable_id'=>$product->id,'quantity'=>$qty,'unit_cost'=>$cost,'line_total'=>$qty*$cost]);$po->recalculateTotals();return $po->load('items','supplier');}); }
+}

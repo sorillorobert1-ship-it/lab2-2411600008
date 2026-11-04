@@ -25,3 +25,7 @@ This Laravel 12 application implements the requested Lab 7 module for a hardware
 - Eager-loaded supplier and purchase-order queries.
 
 The sample data contains a manager, one supplier, and two construction-material products. The SQLite database is used by default for easy evaluation; update `.env` for MySQL/XAMPP if required.
+
+### Lab 6 integration
+
+The Lab 7 project now preserves the Lab 6 inventory flow through `InventoryService`, `InventoryTransaction`, `StockChanged`, `NotifyLowStock`, `LowStockNotification`, `/inventory`, and `/api/inventory/live`. The compatibility migration adds the Lab 6 fields (`quantity`, `unit_price`, `transaction_type`, `quantity_before`, and `quantity_after`) while retaining the Lab 7 replenishment fields.

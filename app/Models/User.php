@@ -19,11 +19,12 @@ class User extends Authenticatable
      * @var list<string>
      */
     protected $fillable = [
-        'name', 'email', 'password', 'role',
+        'name', 'email', 'password', 'role', 'is_admin',
     ];
 
     public function isManager(): bool { return in_array($this->role, ['manager', 'admin'], true); }
     public function isAdmin(): bool { return $this->role === 'admin'; }
+    public function inventoryTransactions() { return $this->hasMany(InventoryTransaction::class); }
 
     /**
      * The attributes that should be hidden for serialization.
@@ -45,6 +46,7 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'is_admin' => 'boolean',
         ];
     }
 }

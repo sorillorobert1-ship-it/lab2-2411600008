@@ -6,8 +6,9 @@ use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 
 /**
- * Lab 7 scheduler reference. Laravel 12 loads scheduled tasks from routes/console.php;
- * this Kernel class is kept as the familiar scheduling location for classroom review.
+ * Scheduler reference for the Lab 7 documentation checklist.
+ *
+ * Laravel 11 boots the same schedule from routes/console.php.
  */
 class Kernel extends ConsoleKernel
 {

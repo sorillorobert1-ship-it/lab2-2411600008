@@ -8,6 +8,9 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\Facades\Cache;
 use App\Models\Supplier;
+use Illuminate\Support\Facades\Event;
+use App\Events\StockChanged;
+use App\Listeners\NotifyLowStock;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -17,6 +20,7 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         Gate::define('approve-purchase-order', fn ($user, PurchaseOrder $order) => $user->isManager() && in_array($order->status, ['pending_approval','draft'], true));
+        Gate::define('receive-purchase-order', fn ($user, PurchaseOrder $order) => $user->isManager() && in_array($order->status, ['approved','ordered','partially_received'], true));
         Gate::define('manage-suppliers', fn ($user) => $user->isManager());
         Gate::policy(PurchaseOrder::class, \App\Policies\PurchaseOrderPolicy::class);
     }
@@ -26,6 +30,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Event::listen(StockChanged::class, NotifyLowStock::class);
         View::composer('dashboard', function ($view) { $view->with('topSuppliers', Cache::remember('dashboard.top-suppliers', now()->addMinutes(10), fn () => Supplier::where('is_active', true)->orderByDesc('reliability_score')->limit(3)->get())); });
     }
 }

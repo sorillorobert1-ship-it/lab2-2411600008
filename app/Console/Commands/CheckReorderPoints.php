@@ -23,7 +23,7 @@ class CheckReorderPoints extends Command
         $products = $reorderService->getProductsNeedingReorder();
 
         if ($products->isEmpty()) {
-            $this->info('All products are above their reorder points. No purchase orders generated.');
+            $this->info('No new purchase orders needed: all products are above their reorder points or already on an open purchase order.');
 
             return self::SUCCESS;
         }

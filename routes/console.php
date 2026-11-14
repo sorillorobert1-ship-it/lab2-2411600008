@@ -8,4 +8,7 @@ Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
 
-Schedule::command('inventory:check-reorder-points')->dailyAt('06:00');
+Schedule::command('inventory:check-reorder')
+    ->dailyAt('06:00')
+    ->withoutOverlapping()
+    ->emailOutputTo(config('mail.admin_address'));

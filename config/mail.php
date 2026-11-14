@@ -115,4 +115,7 @@ return [
         'name' => env('MAIL_FROM_NAME', env('APP_NAME', 'Laravel')),
     ],
 
+    // Receives scheduled reorder-check output and procurement alerts.
+    'admin_address' => env('MAIL_ADMIN_ADDRESS', 'admin@roberthotel.com'),
+
 ];

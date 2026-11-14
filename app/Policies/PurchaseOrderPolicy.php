@@ -4,63 +4,69 @@ namespace App\Policies;
 
 use App\Models\PurchaseOrder;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
 
 class PurchaseOrderPolicy
 {
-    /**
-     * Determine whether the user can view any models.
-     */
+    /** Every signed-in role can see the purchase order list. */
     public function viewAny(User $user): bool
     {
-        return $user->isManager();
+        return in_array($user->role, User::ROLES, true) || $user->isAdmin();
     }
 
-    /**
-     * Determine whether the user can view the model.
-     */
     public function view(User $user, PurchaseOrder $purchaseOrder): bool
     {
-        return $user->isManager();
+        return $this->viewAny($user);
     }
 
-    /**
-     * Determine whether the user can create models.
-     */
+    /** Purchasing staff, managers and admins create orders; warehouse staff only receive. */
     public function create(User $user): bool
     {
-        return $user->isManager();
+        return $user->hasRole('manager', 'staff');
     }
 
-    /**
-     * Determine whether the user can update the model.
-     */
+    /** Only draft orders, and only by the creator or an admin. */
     public function update(User $user, PurchaseOrder $purchaseOrder): bool
     {
-        return $user->isManager() && in_array($purchaseOrder->status, ['draft','pending_approval'], true);
+        return $purchaseOrder->canBeEdited()
+            && ($user->id === $purchaseOrder->created_by || $user->isAdmin());
     }
 
-    /**
-     * Determine whether the user can delete the model.
-     */
+    public function submit(User $user, PurchaseOrder $purchaseOrder): bool
+    {
+        return $purchaseOrder->canBeSubmitted()
+            && ($user->id === $purchaseOrder->created_by || $user->isManager() || $purchaseOrder->is_auto_generated);
+    }
+
+    /** Only draft orders, and only by an admin. */
     public function delete(User $user, PurchaseOrder $purchaseOrder): bool
     {
-        return false;
+        return $purchaseOrder->canBeEdited() && $user->isAdmin();
     }
 
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user, PurchaseOrder $purchaseOrder): bool
+    public function cancel(User $user, PurchaseOrder $purchaseOrder): bool
     {
-        return false;
+        return $purchaseOrder->canBeCancelled() && $user->isManager();
     }
 
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, PurchaseOrder $purchaseOrder): bool
+    /** Managers and admins only. */
+    public function approve(User $user, PurchaseOrder $purchaseOrder): bool
     {
-        return false;
+        return $purchaseOrder->canBeApproved() && $user->isManager();
+    }
+
+    public function reject(User $user, PurchaseOrder $purchaseOrder): bool
+    {
+        return $this->approve($user, $purchaseOrder);
+    }
+
+    public function send(User $user, PurchaseOrder $purchaseOrder): bool
+    {
+        return $purchaseOrder->canBeSent() && $user->isManager();
+    }
+
+    /** Warehouse staff and admins. */
+    public function receive(User $user, PurchaseOrder $purchaseOrder): bool
+    {
+        return $purchaseOrder->canBeReceived() && $user->isWarehouse();
     }
 }

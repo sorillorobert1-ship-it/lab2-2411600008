@@ -22,9 +22,39 @@ class User extends Authenticatable
         'name', 'email', 'password', 'role', 'is_admin',
     ];
 
-    public function isManager(): bool { return in_array($this->role, ['manager', 'admin'], true); }
-    public function isAdmin(): bool { return $this->role === 'admin'; }
-    public function inventoryTransactions() { return $this->hasMany(InventoryTransaction::class); }
+    public const ROLES = ['admin', 'manager', 'warehouse', 'staff'];
+
+    public function isAdmin(): bool
+    {
+        return $this->role === 'admin' || $this->is_admin;
+    }
+
+    /** Managers and admins can approve purchase orders and manage suppliers. */
+    public function isManager(): bool
+    {
+        return $this->isAdmin() || $this->role === 'manager';
+    }
+
+    /** Warehouse staff and admins can receive deliveries. */
+    public function isWarehouse(): bool
+    {
+        return $this->isAdmin() || $this->role === 'warehouse';
+    }
+
+    public function hasRole(string ...$roles): bool
+    {
+        return $this->isAdmin() || in_array($this->role, $roles, true);
+    }
+
+    public function inventoryTransactions()
+    {
+        return $this->hasMany(InventoryTransaction::class);
+    }
+
+    public function purchaseOrders()
+    {
+        return $this->hasMany(PurchaseOrder::class, 'created_by');
+    }
 
     /**
      * The attributes that should be hidden for serialization.

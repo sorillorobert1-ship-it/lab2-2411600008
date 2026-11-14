@@ -1,26 +1,59 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use App\Models\{Product,PurchaseOrder,Supplier};
-use App\Http\Controllers\{SupplierController,PurchaseOrderController};
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\ExportController;
 use App\Http\Controllers\InventoryController;
-use Illuminate\Support\Facades\Auth;
-use App\Services\ReplenishmentService;
-use App\Mail\PurchaseOrderStatusMail;
+use App\Http\Controllers\ProductController;
+use App\Http\Controllers\PurchaseOrderController;
+use App\Http\Controllers\ReportController;
+use App\Http\Controllers\SupplierController;
+use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () { return view('dashboard', ['products'=>Product::where('is_active',true)->get(), 'supplierCount'=>Supplier::where('is_active',true)->count(), 'pendingOrders'=>PurchaseOrder::whereIn('status',['draft','pending_approval'])->count(), 'orderValue'=>PurchaseOrder::whereIn('status',['approved','ordered'])->sum('total')]); })->name('dashboard');
-Route::middleware('auth')->group(function () { Route::resource('suppliers', SupplierController::class); });
-Route::get('/inventory',[InventoryController::class,'index'])->name('inventory.index');
-Route::post('/inventory/movements',[InventoryController::class,'store'])->name('inventory.store');
-Route::get('/api/inventory/live',[InventoryController::class,'api'])->name('inventory.api');
-Route::middleware('auth')->group(function () { Route::resource('purchase-orders', PurchaseOrderController::class)->only(['index','create','store','show']); });
-Route::post('purchase-orders/{purchaseOrder}/approve',[PurchaseOrderController::class,'approve'])->middleware('auth')->name('purchase-orders.approve');
-Route::post('purchase-orders/{purchaseOrder}/receive',[PurchaseOrderController::class,'receive'])->middleware('auth')->name('purchase-orders.receive');
-Route::post('/replenishment/check', function (ReplenishmentService $service) { $created=0; Product::with('suppliers')->where('is_active',true)->each(function($product) use ($service,&$created){ if($service->generateFor($product)) $created++; }); return redirect()->route('dashboard')->with('success',"Automatic reorder check complete: {$created} purchase order(s) created or already pending."); })->name('replenishment.check');
-Route::get('/supplier-performance', function () { $suppliers=Supplier::withCount('products')->with(['purchaseOrders'])->where('is_active',true)->orderByDesc('reliability_score')->get(); return view('suppliers.performance', compact('suppliers')); })->name('suppliers.performance');
-Route::get('/email-preview', function () { $order=PurchaseOrder::with('supplier')->latest()->firstOrFail(); return (new PurchaseOrderStatusMail($order))->render(); })->name('email.preview');
-Route::get('/login', fn () => redirect()->route('demo-login'))->name('login');
-Route::get('/demo-login', function(){ $user=\App\Models\User::firstOrCreate(['email'=>'manager@example.com'],['name'=>'Lab Manager','password'=>'password','role'=>'manager']); Auth::login($user); return redirect()->route('dashboard'); })->name('demo-login');
-Route::post('/logout', function(){ Auth::logout(); return redirect()->route('dashboard'); })->name('logout');
-Route::get('/email-inbox', function () { $order=PurchaseOrder::with('supplier')->latest()->firstOrFail(); return view('emails.inbox', ['order'=>$order, 'mailBody'=>(new PurchaseOrderStatusMail($order))->render()]); })->name('email.inbox');
-Route::get('/email-send', function () { $order=PurchaseOrder::with('supplier')->latest()->firstOrFail(); \Illuminate\Support\Facades\Mail::to(env('MAIL_TO','manager@example.com'))->send(new PurchaseOrderStatusMail($order)); return 'Email sent to Mailtrap test inbox. Open your Mailtrap Inbox to view it.'; })->name('email.send');
+Route::middleware('guest')->group(function () {
+    Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
+    Route::post('/login', [AuthController::class, 'login'])->name('login.attempt');
+});
+
+Route::middleware('auth')->group(function () {
+    Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+
+    Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
+    Route::post('/replenishment/check', [DashboardController::class, 'runReorderCheck'])->name('replenishment.check');
+
+    Route::prefix('api/dashboard')->name('api.dashboard.')->group(function () {
+        Route::get('/pending-orders', [DashboardController::class, 'pendingOrders'])->name('pending-orders');
+        Route::get('/recent-orders', [DashboardController::class, 'recentOrders'])->name('recent-orders');
+        Route::get('/supplier-performance', [DashboardController::class, 'supplierPerformance'])->name('supplier-performance');
+        Route::get('/reorder-alerts', [DashboardController::class, 'reorderAlerts'])->name('reorder-alerts');
+    });
+
+    Route::post('suppliers/{id}/restore', [SupplierController::class, 'restore'])->name('suppliers.restore');
+    Route::resource('suppliers', SupplierController::class);
+
+    Route::resource('purchase-orders', PurchaseOrderController::class);
+    Route::controller(PurchaseOrderController::class)->prefix('purchase-orders/{purchase_order}')->name('purchase-orders.')->group(function () {
+        Route::post('/submit', 'submit')->name('submit');
+        Route::post('/approve', 'approve')->name('approve');
+        Route::post('/reject', 'reject')->name('reject');
+        Route::post('/send', 'send')->name('send');
+        Route::post('/receive', 'receive')->name('receive');
+        Route::get('/pdf', 'pdf')->name('pdf');
+    });
+
+    Route::get('/products', [ProductController::class, 'index'])->name('products.index');
+
+    Route::get('/inventory', [InventoryController::class, 'index'])->name('inventory.index');
+    Route::post('/inventory/movements', [InventoryController::class, 'store'])->middleware('role:manager,warehouse')->name('inventory.store');
+    Route::get('/api/inventory/live', [InventoryController::class, 'api'])->name('inventory.api');
+
+    Route::get('/reports/supplier-performance', [ReportController::class, 'supplierPerformance'])
+        ->middleware('role:manager')->name('reports.supplier-performance');
+
+    Route::prefix('exports')->name('exports.')->whereIn('format', ['csv', 'pdf'])->group(function () {
+        Route::get('/products/{format}', [ExportController::class, 'products'])->name('products');
+        Route::get('/purchase-orders/{format}', [ExportController::class, 'purchaseOrders'])->name('purchase-orders');
+        Route::get('/transactions/{format}', [ExportController::class, 'transactions'])->name('transactions');
+        Route::get('/supplier-performance/{format}', [ExportController::class, 'supplierPerformance'])->middleware('role:manager')->name('supplier-performance');
+    });
+});

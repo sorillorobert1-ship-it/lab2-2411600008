@@ -16,10 +16,10 @@ and CSV/PDF exports.
    copy .env.example .env        # Windows (use cp on macOS/Linux)
    php artisan key:generate
    php artisan migrate:fresh --seed
-   php artisan serve --port=8001  # or double-click run-lab7.bat
+   php artisan serve --port=8000  # or double-click run-lab7.bat
    ```
 3. Put your Mailtrap username/password in `.env` (`MAIL_USERNAME`, `MAIL_PASSWORD`).
-4. Open http://127.0.0.1:8001 and sign in. All demo accounts use the password `password`:
+4. Open http://127.0.0.1:8000 and sign in. All demo accounts use the password `password`:
 
 | Role | Email | Can do |
 |------|-------|--------|

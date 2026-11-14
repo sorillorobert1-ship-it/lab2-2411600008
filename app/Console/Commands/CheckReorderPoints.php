@@ -2,31 +2,65 @@
 
 namespace App\Console\Commands;
 
+use App\Mail\LowStockAlert;
+use App\Models\User;
+use App\Services\ReorderService;
 use Illuminate\Console\Command;
-use App\Models\Product;
-use App\Services\ReplenishmentService;
+use Illuminate\Support\Facades\Mail;
 
 class CheckReorderPoints extends Command
 {
-    /**
-     * The name and signature of the console command.
-     *
-     * @var string
-     */
-    protected $signature = 'inventory:check-reorder-points';
+    protected $signature = 'inventory:check-reorder';
 
-    /**
-     * The console command description.
-     *
-     * @var string
-     */
-    protected $description = 'Generate purchase orders for products below their calculated reorder point';
+    protected $aliases = ['inventory:check-reorder-points'];
 
-    /**
-     * Execute the console command.
-     */
-    public function handle()
+    protected $description = 'Detect products below their reorder point and generate draft purchase orders';
+
+    public function handle(ReorderService $reorderService): int
     {
-        $count=0; $service=app(ReplenishmentService::class); $this->line('Checking active products against calculated reorder points...'); Product::with('suppliers')->where('is_active',true)->each(function($product)use($service,&$count){$supplier=$product->suppliers->first(); if($supplier){$point=$service->reorderPoint($product,$supplier); $this->line("- {$product->sku}: on hand {$product->quantity_on_hand}, reorder point {$point}");} if($service->generateFor($product))$count++;}); $this->info("Generated {$count} replenishment order(s)."); return self::SUCCESS;
+        $this->info('Robert Hotel - automated reorder point check ('.now()->format('M d, Y h:i A').')');
+
+        $products = $reorderService->getProductsNeedingReorder();
+
+        if ($products->isEmpty()) {
+            $this->info('No new purchase orders needed: all products are above their reorder points or already on an open purchase order.');
+
+            return self::SUCCESS;
+        }
+
+        $this->table(
+            ['SKU', 'Product', 'Supplier', 'On hand', 'Avg daily usage', 'Reorder point', 'Order qty'],
+            $products->map(fn ($product) => [
+                $product->sku,
+                $product->name,
+                $product->supplier->name,
+                $product->quantity_on_hand,
+                $reorderService->calculateAverageDailyUsage($product),
+                $reorderService->calculateReorderPoint($product),
+                $reorderService->calculateOptimalOrderQuantity($product),
+            ])
+        );
+
+        $orders = $reorderService->generatePurchaseOrders();
+
+        foreach ($orders as $order) {
+            $this->line("  Created {$order->reference_number} for {$order->supplier->name}: {$order->items->count()} item(s), total PHP ".number_format($order->total, 2));
+        }
+
+        $admins = User::whereIn('role', ['admin', 'manager'])->get();
+
+        if ($admins->isNotEmpty()) {
+            try {
+                Mail::to($admins)->send(new LowStockAlert($products));
+                $this->info("Low stock alert sent to {$admins->count()} administrator(s).");
+            } catch (\Throwable $e) {
+                report($e);
+                $this->warn('Purchase orders were created but the alert email could not be sent: '.$e->getMessage());
+            }
+        }
+
+        $this->info("Generated {$orders->count()} purchase order(s) for {$products->count()} product(s).");
+
+        return self::SUCCESS;
     }
 }

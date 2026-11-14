@@ -1,31 +1,82 @@
 # Laboratory Exercise 7
 
-## Automated Inventory Replenishment and Supplier Management
+## Advanced MVC Architecture with Laravel: Automated Inventory Replenishment and Supplier Management
 
-This Laravel 12 application implements the requested Lab 7 module for a hardware inventory system.
+Laravel 12 application for **Robert Hotel's** room and guest-supplies inventory. It extends the Lab 6
+real-time inventory tracking system with supplier management, automated reorder detection, a purchase
+order approval workflow, email notifications, dashboard widgets, supplier performance reports, search
+and CSV/PDF exports.
 
-### Run it
+### Setup (XAMPP + VS Code)
 
-1. Open this folder in VS Code.
-2. Run `php artisan migrate:fresh --seed`.
-3. Run `php artisan serve` or point XAMPP Apache at the `public` folder.
-4. Open `/` in a browser. Use `/demo-login` to sign in as the seeded manager (`manager@example.com` / `password`) before approving or receiving orders.
+1. Start **Apache** and **MySQL** in XAMPP and create a database named `lab7_inventory` in phpMyAdmin.
+2. In the project folder run:
+   ```bash
+   composer install
+   copy .env.example .env        # Windows (use cp on macOS/Linux)
+   php artisan key:generate
+   php artisan migrate:fresh --seed
+   php artisan serve --port=8000  # or double-click run-lab7.bat
+   ```
+3. Put your Mailtrap username/password in `.env` (`MAIL_USERNAME`, `MAIL_PASSWORD`).
+4. Open http://127.0.0.1:8000 and sign in. All demo accounts use the password `password`:
 
-### Implemented requirements
+| Role | Email | Can do |
+|------|-------|--------|
+| Admin | admin@roberthotel.com | Everything (incl. deleting draft POs) |
+| Manager | manager@example.com | Manage suppliers, approve/reject/send POs, reports |
+| Warehouse | warehouse@roberthotel.com | Receive deliveries, record stock movements |
+| Staff | staff@roberthotel.com | Create and edit own draft POs |
 
-- Supplier CRUD with `SoftDeletes`, lead times, reliability scores, and supplier catalogue.
-- Product-to-supplier many-to-many relationship with agreed costs and minimum order quantities.
-- Polymorphic purchase-order items and inventory transaction references.
-- Reorder-point service using average daily usage, supplier lead time, and safety stock.
-- `inventory:check-reorder-points` scheduled daily at 06:00.
-- Purchase-order workflow: draft/pending approval/approved/received.
-- Manager authorization through a Gate and `PurchaseOrderPolicy`.
-- Queued-ready `PurchaseOrderStatusMail` and database/mail notification.
-- Dashboard view composer with cached top-supplier metrics.
-- Eager-loaded supplier and purchase-order queries.
+Emails are sent immediately with `QUEUE_CONNECTION=sync`. To queue them instead set
+`QUEUE_CONNECTION=database` and run `php artisan queue:work`.
 
-The sample data contains a manager, one supplier, and two construction-material products. The SQLite database is used by default for easy evaluation; update `.env` for MySQL/XAMPP if required.
+### Scheduled reorder check
+
+```bash
+php artisan inventory:check-reorder   # run manually (screenshot 16)
+php artisan schedule:list             # shows the daily 06:00 schedule
+php artisan schedule:work             # runs the scheduler locally
+```
+
+Reorder Point = (Average Daily Usage x Lead Time) + Safety Stock. The suggested order quantity uses a
+simplified EOQ, `sqrt((2 x D x S) / H)`, and never goes below the supplier's minimum order quantity.
+
+### Features and where to find them
+
+| Requirement | Implementation |
+|-------------|----------------|
+| Supplier model with SoftDeletes, scopes `active()` / `withLeadTime()`, accessors `full_contact` / `performance_rating` | `app/Models/Supplier.php` |
+| Supplier CRUD with search, status filter, sort, pending-PO delete guard, restore | `SupplierController`, `resources/views/suppliers/*` |
+| Purchase orders: statuses draft, pending, approved, rejected, sent, partially_received, received, cancelled | `app/Models/PurchaseOrder.php` |
+| Line items with `line_total` and `outstanding_quantity` accessors | `app/Models/PurchaseOrderItem.php` |
+| Create/edit with dynamic JavaScript line items, approve, reject, send, receive (partial), cancel, PDF | `PurchaseOrderController`, `resources/views/purchase-orders/*` |
+| Approval history | `PurchaseOrderHistory` model, written by `PurchaseOrderObserver` |
+| Policy (viewAny, view, create, update, delete, approve, receive) + Gates + `role` middleware | `app/Policies/PurchaseOrderPolicy.php`, `AppServiceProvider`, `app/Http/Middleware/EnsureUserHasRole.php` |
+| Many-to-many product/supplier catalogue with agreed prices and MOQ | `product_supplier` table, `Product::suppliers()`, `Supplier::catalogProducts()` |
+| Polymorphic relationship | `InventoryTransaction::reference()` (morphTo) / `PurchaseOrder::inventoryTransactions()` (morphMany) |
+| ReorderService | `app/Services/ReorderService.php` |
+| Artisan command + daily schedule | `app/Console/Commands/CheckReorderPoints.php`, `app/Console/Kernel.php`, `routes/console.php` |
+| Mailables (queued): PurchaseOrderCreated (PDF attached), PurchaseOrderApproved, PurchaseOrderSent (PDF attached), LowStockAlert | `app/Mail/*`, `resources/views/emails/*` |
+| Dashboard widgets via View Composers with caching | `app/Providers/ViewServiceProvider.php`, `resources/views/widgets/*` |
+| Widget API endpoints (auto-refresh every 30s) | `GET /api/dashboard/{pending-orders,recent-orders,supplier-performance,reorder-alerts}` |
+| Supplier performance: total orders, on-time, avg delivery vs quoted, accuracy, total value, charts, top/bottom | `SupplierPerformanceService`, `ReportController`, `/reports/supplier-performance` |
+| Search service, `scopeFilter()` query scopes, reusable `<x-filter-form>` component | `app/Services/SearchService.php`, `resources/views/components/filter-form.blade.php` |
+| CSV and PDF exports (products, purchase orders, transactions, supplier performance) | `app/Exports/*`, `ExportController` (uses `barryvdh/laravel-dompdf`) |
+| Eager loading and query caching | `with()` / `withCount()` in controllers and services, `Cache::remember()` in composers and reports |
 
 ### Lab 6 integration
 
-The Lab 7 project now preserves the Lab 6 inventory flow through `InventoryService`, `InventoryTransaction`, `StockChanged`, `NotifyLowStock`, `LowStockNotification`, `/inventory`, and `/api/inventory/live`. The compatibility migration adds the Lab 6 fields (`quantity`, `unit_price`, `transaction_type`, `quantity_before`, and `quantity_after`) while retaining the Lab 7 replenishment fields.
+`InventoryService`, `InventoryTransaction`, the `StockChanged` event, the `NotifyLowStock` listener,
+`LowStockNotification`, `/inventory` and `/api/inventory/live` are preserved. Receiving a purchase order
+creates stock-in inventory transactions through `InventoryService`.
+
+### Tests
+
+```bash
+php artisan test
+```
+
+Feature tests cover supplier CRUD and soft deletes, the purchase order workflow per role, email
+notifications, receiving, reorder calculations, the scheduled command, dashboard APIs, performance
+metrics, search filters and exports.
